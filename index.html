@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#111111" />
+  <title>Spulen Manager</title>
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- iOS PWA hints -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  <header class="header">
+    <div class="header__title">
+      <h1>Spulen Manager</h1>
+      <p class="muted">Offline • Filter • Fotos</p>
+    </div>
+    <div class="header__actions">
+      <button id="btnAdd" class="btn btn-primary">+ Spule</button>
+      <button id="btnBackup" class="btn">Backup</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Filter & Sortierung</h2>
+
+      <div class="grid">
+        <label>
+          Suche (über alles)
+          <input id="q" type="search" placeholder="z.B. PLA, Silk, Bambu, Schwarz..." />
+        </label>
+
+        <label>
+          Material
+          <select id="fMaterial">
+            <option value="">(alle)</option>
+            <option>PLA</option>
+            <option>PETG</option>
+            <option>ABS</option>
+            <option>ASA</option>
+            <option>TPU</option>
+            <option>PA / Nylon</option>
+            <option>PC</option>
+            <option>Sonstiges</option>
+          </select>
+        </label>
+
+        <label>
+          Materialvariante
+          <input id="fVariant" type="text" placeholder="z.B. Basic, Matte, Silk, CF..." />
+        </label>
+
+        <label>
+          Farbgruppe
+          <select id="fColorGroup">
+            <option value="">(alle)</option>
+            <option>Schwarz</option>
+            <option>Weiß</option>
+            <option>Grau</option>
+            <option>Rot</option>
+            <option>Blau</option>
+            <option>Grün</option>
+            <option>Gelb</option>
+            <option>Orange</option>
+            <option>Lila</option>
+            <option>Pink</option>
+            <option>Braun</option>
+            <option>Beige</option>
+            <option>Transparent</option>
+            <option>Multi</option>
+            <option>Sonstiges</option>
+          </select>
+        </label>
+
+        <label>
+          Hersteller
+          <input id="fBrand" type="text" placeholder="z.B. Bambu, Prusament..." />
+        </label>
+
+        <label>
+          Zustand
+          <select id="fState">
+            <option value="">(alle)</option>
+            <option value="new">neu</option>
+            <option value="open">offen</option>
+          </select>
+        </label>
+
+        <label>
+          Sortierung
+          <select id="sortBy">
+            <option value="createdAt_desc">Neueste zuerst</option>
+            <option value="createdAt_asc">Älteste zuerst</option>
+
+            <option value="material_asc">Material A→Z</option>
+            <option value="variant_asc">Variante A→Z</option>
+            <option value="brand_asc">Hersteller A→Z</option>
+            <option value="colorGroup_asc">Farbgruppe A→Z</option>
+            <option value="color_asc">Farbe A→Z</option>
+
+            <option value="weight_desc">Gewicht ↓</option>
+            <option value="weight_asc">Gewicht ↑</option>
+
+            <option value="profile_asc">Druckprofil A→Z</option>
+          </select>
+        </label>
+
+        <label class="inline">
+          <input id="onlyWithPhoto" type="checkbox" />
+          nur mit Foto
+        </label>
+      </div>
+
+      <div class="row">
+        <button id="btnClearFilters" class="btn">Filter zurücksetzen</button>
+        <span id="stats" class="muted"></span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Meine Spulen</h2>
+      <div id="list" class="list"></div>
+      <p id="empty" class="muted" style="display:none;">Noch keine Spulen. Tippe auf „+ Spule“.</p>
+    </section>
+  </main>
+
+  <!-- Dialog: Add/Edit -->
+  <dialog id="dlg">
+    <form method="dialog" id="form" class="dialog">
+      <h3 id="dlgTitle">Spule</h3>
+
+      <div class="grid">
+        <label>
+          Material
+          <input id="material" list="materials" placeholder="PLA, PETG..." required />
+          <datalist id="materials">
+            <option value="PLA"></option>
+            <option value="PETG"></option>
+            <option value="ABS"></option>
+            <option value="ASA"></option>
+            <option value="TPU"></option>
+            <option value="PA / Nylon"></option>
+            <option value="PC"></option>
+            <option value="Sonstiges"></option>
+          </datalist>
+        </label>
+
+        <label>
+          Materialvariante
+          <input id="variant" list="variants" placeholder="Basic, Matte, Silk, CF..." />
+          <datalist id="variants">
+            <option value="Basic"></option>
+            <option value="Matte"></option>
+            <option value="Silk"></option>
+            <option value="Glossy"></option>
+            <option value="Transparent"></option>
+            <option value="Glitter"></option>
+            <option value="Metallic"></option>
+            <option value="Wood"></option>
+            <option value="CF"></option>
+            <option value="GF"></option>
+          </datalist>
+        </label>
+
+        <label>
+          Farbe (Name)
+          <input id="color" placeholder="z.B. Schwarz, 'Deep Sea Blue'..." required />
+        </label>
+
+        <label>
+          Farbgruppe
+          <select id="colorGroup">
+            <option value="">(optional)</option>
+            <option>Schwarz</option>
+            <option>Weiß</option>
+            <option>Grau</option>
+            <option>Rot</option>
+            <option>Blau</option>
+            <option>Grün</option>
+            <option>Gelb</option>
+            <option>Orange</option>
+            <option>Lila</option>
+            <option>Pink</option>
+            <option>Braun</option>
+            <option>Beige</option>
+            <option>Transparent</option>
+            <option>Multi</option>
+            <option>Sonstiges</option>
+          </select>
+        </label>
+
+        <label>
+          Hersteller
+          <input id="brand" placeholder="z.B. Bambu Lab, eSUN, Prusament..." />
+        </label>
+
+        <label>
+          Zustand
+          <select id="state">
+            <option value="new">neu</option>
+            <option value="open">offen</option>
+          </select>
+        </label>
+
+        <label>
+          Gewicht (g)
+          <input id="weight" type="number" min="0" step="1" value="1000" />
+        </label>
+
+        <label>
+          Druckprofil (optional)
+          <input id="profile" placeholder="z.B. Bambu: PLA Matte v2" />
+        </label>
+
+        <label>
+          Notizen (optional)
+          <input id="notes" placeholder="z.B. 'Top Oberfläche', 'Stringing', etc." />
+        </label>
+      </div>
+
+      <div class="photo">
+        <div class="photo__left">
+          <label class="btn btn-secondary">
+            📷 Farbfoto aufnehmen
+            <input id="photoInput" type="file" accept="image/*" capture="environment" hidden />
+          </label>
+
+          <button id="btnRemovePhoto" class="btn" type="button">Foto entfernen</button>
+        </div>
+
+        <div class="photo__right">
+          <img id="photoPreview" alt="Vorschau" />
+        </div>
+      </div>
+
+      <details class="ocr">
+        <summary>Optional: Label scannen (OCR) → Felder vorfüllen</summary>
+        <p class="muted">
+          Tipp: gutes Licht, Label möglichst gerade fotografieren. Du kannst Vorschläge danach anpassen.
+        </p>
+        <label class="btn btn-secondary">
+          🧾 Label fotografieren
+          <input id="labelInput" type="file" accept="image/*" capture="environment" hidden />
+        </label>
+        <div class="row">
+          <progress id="ocrProg" value="0" max="1" style="display:none;"></progress>
+          <span id="ocrStatus" class="muted"></span>
+        </div>
+        <pre id="ocrText" class="ocrText"></pre>
+      </details>
+
+      <menu class="dialog__actions">
+        <button class="btn" value="cancel">Abbrechen</button>
+        <button id="btnSave" class="btn btn-primary" value="save">Speichern</button>
+      </menu>
+
+      <input type="hidden" id="editingId" />
+    </form>
+  </dialog>
+
+  <!-- Dialog: Backup -->
+  <dialog id="dlgBackup">
+    <form method="dialog" class="dialog">
+      <h3>Backup</h3>
+      <p class="muted">Exportiere deine Spulen als JSON oder importiere ein Backup.</p>
+
+      <div class="row">
+        <button id="btnExport" class="btn btn-primary" type="button">Export (JSON)</button>
+        <label class="btn">
+          Import (JSON)
+          <input id="importInput" type="file" accept="application/json" hidden />
+        </label>
+      </div>
+
+      <menu class="dialog__actions">
+        <button class="btn" value="close">Schließen</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script src="db.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
